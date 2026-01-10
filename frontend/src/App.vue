@@ -118,17 +118,17 @@ export default {
       this.error = null
       this.result = null
 
-      try {
-        const response = await axios.post('/api/generate', {
-          summary: this.summary,
-          api_key: this.apiKey || undefined
-        })
-
-        this.result = response.data
+     try {
+      const base = process.env.VUE_APP_API_URL || ''
+      const response = await axios.post(`${base}/api/generate`, {
+      summary: this.summary,
+      api_key: this.apiKey || undefined
+      })
+      this.result = response.data
       } catch (err) {
-        this.error = err.response?.data?.error || 'An error occurred. Please try again.'
+      this.error = err.response?.data?.error || 'An error occurred. Please try again.'
       } finally {
-        this.loading = false
+      this.loading = false
       }
     },
     handleClear() {
