@@ -43,11 +43,11 @@ Here's your completed daily diary entry 👇
 
 Work Summary:
 
-[Provide a comprehensive and detailed summary of the day's work activities. Describe the specific tasks performed in detail, explain the step-by-step processes followed, mention all tools and technologies used, discuss methodologies and approaches applied, highlight challenges encountered and how they were overcome, and explain the overall scope and impact of the work. Write 4-6 detailed sentences that thoroughly describe the work accomplished, making it comprehensive and informative.]
+[Provide a comprehensive and detailed summary of the day's work activities. Describe the specific tasks performed in detail, explain the step-by-step processes followed, mention all tools and technologies used, discuss methodologies and approaches applied, highlight challenges encountered and how they were overcome, and explain the overall scope and impact of the work. Write 3-4 detailed sentences that thoroughly describe the work accomplished, making it comprehensive and informative.]
 
 Learnings / Outcomes:
 
-[Provide extensive detail about the learning experiences and outcomes achieved. Explain specific technical concepts learned with examples, describe skills developed with concrete evidence, discuss challenges overcome with lessons learned, highlight measurable results and achievements with metrics or outcomes, and reflect on personal growth and development. Write 5-7 detailed sentences explaining what was learned, how it was applied, and what was accomplished.]
+[Provide extensive detail about the learning experiences and outcomes achieved. Explain specific technical concepts learned with examples, describe skills developed with concrete evidence, discuss challenges overcome with lessons learned, highlight measurable results and achievements with metrics or outcomes, and reflect on personal growth and development. Write 3-4 detailed sentences explaining what was learned, how it was applied, and what was accomplished.]
 
 Blockers / Risks:
 
@@ -59,11 +59,9 @@ Provide comprehensive analysis of challenges faced and potential risks throughou
 - Dependencies on other team members or resources and their impact
 - Areas requiring further clarification or understanding and how they were handled
 - Learning curve challenges with specific tools or technologies and adaptation methods
-Always provide constructive, realistic content that demonstrates deep self-awareness and professional growth mindset. Write 4-6 detailed sentences with specific examples and insights.]
+Always provide constructive, realistic content that demonstrates deep self-awareness and professional growth mindset. Write 3-4 detailed sentences with specific examples and insights.]
 
 Skills: [OPTIONAL - include ONLY if skills can be clearly identified, otherwise skip this section entirely]
-
-[List 6-10 specific technical or professional skills that were used or developed during the work. Include both hard skills (programming languages, frameworks, tools, methodologies) and soft skills (communication, problem-solving, collaboration, etc.). For each skill, briefly mention how it was applied or developed.]
 
 Reference Links: [include ONLY if applicable, otherwise write 'Not Applicable']
 
