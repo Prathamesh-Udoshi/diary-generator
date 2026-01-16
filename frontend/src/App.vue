@@ -326,10 +326,10 @@ export default {
 
 .field-card {
   background: #ffffff;
-  padding: 1.5rem;
+  padding: 1rem;
   border-radius: 15px;
   border-left: 4px solid #667eea;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
@@ -376,16 +376,16 @@ export default {
   color: #555;
   line-height: 1.8;
   font-size: 1rem;
-  min-height: 250px;
-  max-height: 800px;
+  min-height: auto;
+  max-height: 600px;
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: 1rem;
   background: #fafafa;
   border-radius: 8px;
 }
 
 .field-content p {
-  margin: 0.75rem 0;
+  margin: 0.5rem 0;
 }
 
 @media (max-width: 768px) {

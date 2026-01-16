@@ -4,6 +4,8 @@ from openai import OpenAI
 from datetime import datetime
 import re
 import os
+import time
+import hashlib
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -11,6 +13,19 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
+
+# Simple in-memory cache for responses (cleared on restart)
+response_cache = {}
+CACHE_EXPIRY = 3600  # 1 hour cache expiry
+
+def cleanup_cache():
+    """Clean up expired cache entries"""
+    current_time = time.time()
+    expired_keys = [k for k, (_, ts) in response_cache.items() if current_time - ts > CACHE_EXPIRY]
+    for key in expired_keys:
+        del response_cache[key]
+    if expired_keys:
+        print(f"Cleaned up {len(expired_keys)} expired cache entries")
 
 # Error handlers
 @app.errorhandler(404)
@@ -32,56 +47,49 @@ def internal_error(error):
         'message': 'An error occurred on the server.'
     }), 500
 
-# System Prompt
+# Conservative System Prompt
 SYSTEM_PROMPT = """You are an Internship Daily Diary Entry Generator.
 
-Your task is to take a raw full-day work summary written by an internship student and generate clean, professional, internship-appropriate diary entries.
+Convert raw work summaries into professional diary entries. Use the provided information as the foundation and make reasonable generalizations that naturally follow from the described work.
 
-You MUST generate the output in the following fixed structure and format EXACTLY:
+Structure your output exactly like this:
 
 Here's your completed daily diary entry 👇
 
 Work Summary:
-
-[Provide a comprehensive and detailed summary of the day's work activities. Describe the specific tasks performed in detail, explain the step-by-step processes followed, mention all tools and technologies used, discuss methodologies and approaches applied, highlight challenges encountered and how they were overcome, and explain the overall scope and impact of the work. Write 3-4 detailed sentences that thoroughly describe the work accomplished, making it comprehensive and informative.]
+[Provide a comprehensive 5-7 sentence summary covering the day's activities, tasks, tools, and processes. Make reasonable generalizations about related aspects of the work described.]
 
 Learnings / Outcomes:
-
-[Provide extensive detail about the learning experiences and outcomes achieved. Explain specific technical concepts learned with examples, describe skills developed with concrete evidence, discuss challenges overcome with lessons learned, highlight measurable results and achievements with metrics or outcomes, and reflect on personal growth and development. Write 3-4 detailed sentences explaining what was learned, how it was applied, and what was accomplished.]
+[Explain in 5-7 sentences what was learned and achieved. Include reasonable generalizations about skill development and outcomes that would naturally follow from the work performed.]
 
 Blockers / Risks:
+[Mandatory section with 5-7 sentences about challenges faced, potential risks, and areas for improvement. Make reasonable generalizations about typical challenges that would accompany this type of work. Never write "None".]
 
-[CRITICAL: This field is MANDATORY and must ALWAYS contain meaningful content. NEVER write just "None".
-Provide comprehensive analysis of challenges faced and potential risks throughout the work. Discuss 3-5 specific challenges or risks in detail, including:
-- Time management challenges and specific strategies used to address them
-- Areas where more learning or practice would be beneficial and why
-- Potential future challenges that could arise and mitigation strategies
-- Dependencies on other team members or resources and their impact
-- Areas requiring further clarification or understanding and how they were handled
-- Learning curve challenges with specific tools or technologies and adaptation methods
-Always provide constructive, realistic content that demonstrates deep self-awareness and professional growth mindset. Write 3-4 detailed sentences with specific examples and insights.]
+Skills: [Optional - include if specific skills can be reasonably inferred from the work described]
 
-Skills: [OPTIONAL - include ONLY if skills can be clearly identified, otherwise skip this section entirely]
+Reference Links: [Optional - include relevant resources that would typically be associated with this type of work]
 
-Reference Links: [include ONLY if applicable, otherwise write 'Not Applicable']
-
-[Provide 3-6 relevant links to documentation, tutorials, code repositories, or resources that were referenced or would be helpful for similar work. Include brief descriptions of what each link contains and why it's relevant.]
-
-RULES:
-- Start with "Here's your completed daily diary entry 👇"
-- Work Summary and Learnings / Outcomes are MANDATORY and must always be present with substantial content
-- Keep the tone professional, concise, and suitable for internship submission
-- Do NOT exaggerate, invent work, or add implementation details if the user mentions theory-only understanding
-- If the user mentions discussion, understanding, learning, reviewing, or studying — keep it theoretical
-- Blockers / Risks is MANDATORY and MUST contain meaningful content - NEVER just "None". Always identify realistic challenges, learning needs, or areas for improvement
-- Skills is OPTIONAL - only include if skills can be clearly identified from the summary, otherwise skip the Skills section entirely
-- If Skills section is skipped, go directly from Blockers/Risks to Reference Links
-- Reference Links should only be included if clearly relevant; otherwise say 'Not Applicable'
-- Use proper paragraph breaks for readability
-- Output must be directly copy-paste ready"""
+GUIDELINES:
+- Base content on the summary but allow reasonable generalizations
+- Maintain professional internship-appropriate tone
+- Ensure all sections have substantial, meaningful content
+- Skip Skills section only if no skills can be reasonably inferred
+- Skip Reference Links only if no relevant resources can be reasonably associated
+- Make generalizations that enhance rather than contradict the original summary"""
 
 def generate_diary_entry(summary, api_key):
-    """Generate diary entry using OpenAI API"""
+    """Generate diary entry using OpenAI API with caching"""
+    # Create cache key from summary (ignore minor differences)
+    cache_key = hashlib.md5(summary.lower().strip()[:500].encode()).hexdigest()
+
+    # Check cache
+    current_time = time.time()
+    if cache_key in response_cache:
+        cached_data, timestamp = response_cache[cache_key]
+        if current_time - timestamp < CACHE_EXPIRY:
+            print(f"Cache hit for summary hash: {cache_key}")
+            return cached_data
+
     user_prompt = f"""Full Day Summary:
 
 {summary}
@@ -90,17 +98,32 @@ Generate the internship daily diary entry strictly following the required struct
 
     try:
         client = OpenAI(api_key=api_key)
+        start_time = time.time()
+
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.7
+            temperature=0.7,
+            max_tokens=2000,  # Increased for detailed 5-7 sentence responses per field
+            timeout=30  # Increased timeout for longer generation time
         )
-        return response.choices[0].message.content
+
+        elapsed_time = time.time() - start_time
+        result = response.choices[0].message.content
+
+        # Cache the result
+        response_cache[cache_key] = (result, current_time)
+        print(f"OpenAI API call took {elapsed_time:.2f} seconds, cached result")
+
+        return result
     except Exception as e:
-        raise Exception(f"Error calling OpenAI API: {str(e)}")
+        elapsed_time = time.time() - start_time if 'start_time' in locals() else 0
+        error_msg = f"OpenAI API error after {elapsed_time:.2f}s: {str(e)}"
+        print(error_msg)
+        raise Exception(error_msg)
 
 def parse_response(response_text):
     """Parse the LLM response into structured fields"""
@@ -156,7 +179,8 @@ def root():
         'endpoints': {
             'GET /': 'API information',
             'GET /api/health': 'Health check',
-            'POST /api/generate': 'Generate diary entry'
+            'POST /api/generate': 'Generate diary entry',
+            'POST /api/cache/clear': 'Clear response cache'
         },
         'status': 'running'
     })
@@ -164,7 +188,25 @@ def root():
 @app.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint"""
-    return jsonify({'status': 'ok', 'message': 'API is running'})
+    cleanup_cache()  # Clean expired entries
+    cache_size = len(response_cache)
+    return jsonify({
+        'status': 'ok',
+        'message': 'API is running',
+        'cache_entries': cache_size,
+        'model': 'gpt-3.5-turbo'
+    })
+
+@app.route('/api/cache/clear', methods=['POST'])
+def clear_cache():
+    """Clear response cache"""
+    global response_cache
+    old_size = len(response_cache)
+    response_cache.clear()
+    return jsonify({
+        'message': f'Cache cleared',
+        'entries_removed': old_size
+    })
 
 @app.route('/api/generate', methods=['POST'])
 def generate_entry():

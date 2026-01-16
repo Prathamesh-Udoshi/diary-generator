@@ -81,14 +81,16 @@ A modern web application built with Flask (backend) and Vue.js (frontend) that h
 
 ## 📋 Output Format
 
-The app generates diary entries in the following format:
+The app generates detailed professional diary entries with reasonable generalizations based on your input:
 
 - **Date**: Selected date with 📅 emoji
-- **Work Summary**: Professional summary of the day's work
-- **Learnings / Outcomes**: What was learned and achieved
-- **Blockers / Risks**: **Always includes meaningful content** - never just "None". Identifies realistic challenges, learning needs, or areas for improvement
-- **Skills**: Optional field (only included if applicable)
-- **Reference Links**: Optional field (or "Not Applicable")
+- **Work Summary**: Comprehensive 5-7 sentence summary of the day's work activities, tasks, tools, and processes
+- **Learnings / Outcomes**: Detailed 5-7 sentence explanation of what was learned, skills developed, and achievements
+- **Blockers / Risks**: **Always includes meaningful content** (5-7 sentences) - never just "None". Provides detailed analysis of challenges, risks, and improvement areas
+- **Skills**: Optional field (included when skills can be reasonably inferred from the work)
+- **Reference Links**: Optional field (included for relevant resources associated with the work)
+
+**Note**: Content is based on your summary with reasonable generalizations that naturally follow from the described work, creating more comprehensive and professional diary entries.
 
 ## 🔒 Security
 
